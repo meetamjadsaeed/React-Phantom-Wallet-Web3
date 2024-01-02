@@ -1,0 +1,226 @@
+import React, { useCallback, useEffect, useState } from "react";
+import {
+  Connection,
+  LAMPORTS_PER_SOL,
+  PublicKey,
+  SystemProgram,
+  Transaction,
+  clusterApiUrl,
+} from "@solana/web3.js";
+import { useWallet } from "@solana/wallet-adapter-react";
+import { Token, TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import { toast } from "react-toastify";
+
+import {
+  phatomEnvironment,
+  solonaKey,
+  solonaNetworkUrl,
+  tokenSymbolName,
+  walletPublicKeyGlobally,
+} from "../helpers";
+import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
+
+const Content = () => {
+  const [lamports, setLamports] = useState(0.001);
+  const [tokenBalances, setTokenBalances] = useState([]);
+  const [solBalance, setSolBalance] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [tokenSymbol, setTokenSymbol] = useState(tokenSymbolName);
+  const [walletPublicKey, setWalletPublicKey] = useState(
+    walletPublicKeyGlobally
+  );
+  const [tokenAddress, setTokenAddress] = useState(null);
+  const connection = new Connection(clusterApiUrl(phatomEnvironment));
+  const { publicKey, sendTransaction } = useWallet();
+
+  const sendSolHandler = useCallback(async () => {
+    try {
+      if (!publicKey) {
+        toast.error("Wallet Not connected");
+        return;
+      }
+
+      setLoading(true);
+
+      const balance = await connection.getBalance(publicKey);
+      let lamportsI = LAMPORTS_PER_SOL * lamports;
+
+      const transaction = new Transaction().add(
+        SystemProgram.transfer({
+          fromPubkey: publicKey,
+          toPubkey: new PublicKey(walletPublicKey),
+          lamports: lamportsI,
+        })
+      );
+
+      const signature = await sendTransaction(transaction, connection);
+
+      await connection.confirmTransaction(signature, "processed");
+
+      toast.success("Transaction Successful");
+      setTheLamports("");
+      fetchSolBalance();
+      setLoading(false);
+    } catch (error) {
+      toast.error("Error: " + error?.message);
+      setLoading(false);
+    }
+  }, [publicKey, sendTransaction, connection, lamports, walletPublicKey]);
+
+  const setTheLamports = (e) => {
+    const { value } = e.target ?? {};
+    setLamports(Number(value));
+  };
+
+  const fetchSolBalance = async () => {
+    if (!publicKey) {
+      return;
+    }
+
+    const balanceInLamports = await connection.getBalance(publicKey);
+    const balanceInSol = balanceInLamports / LAMPORTS_PER_SOL;
+
+    setSolBalance(balanceInSol);
+  };
+
+  const fetchTokenBalances = async () => {
+    if (!publicKey) {
+      return;
+    }
+
+    const tokenAccounts = await connection.getTokenAccountsByOwner(publicKey, {
+      programId: TOKEN_PROGRAM_ID,
+    });
+
+    console.log(tokenAccounts, "tokenAccounts");
+
+    const balances = await Promise.all(
+      tokenAccounts?.value?.map(async (accountInfo) => {
+        const publicKey = new PublicKey(accountInfo.pubkey);
+        const token = new Token(connection, publicKey, TOKEN_PROGRAM_ID);
+        const balance = await token.getBalance(publicKey);
+        const symbol = tokenAddress[publicKey.toBase58()];
+
+        return { publicKey, balance, symbol };
+      })
+    );
+
+    setTokenBalances(balances);
+  };
+
+  const getTokenAddress = async () => {
+    try {
+      const connection = new Connection(solonaNetworkUrl, "singleGossip");
+      const tokenList = await connection.getTokenAccountsByOwner(
+        new PublicKey(walletPublicKey),
+        { programId: new PublicKey(solonaKey) }
+      );
+
+      const filteredTokens = tokenList.value.filter(
+        (token) => token.account.data.parsed.info.symbol === tokenSymbol
+      );
+
+      if (filteredTokens.length === 0) {
+        toast.error(`No tokens found with symbol ${tokenSymbol}`);
+      } else {
+        setTokenAddress(filteredTokens[0].pubkey.toString());
+      }
+    } catch (error) {
+      toast.error("Error: " + error?.message);
+    }
+  };
+
+  const handleTokenSymbolChange = (e) => {
+    setTokenSymbol(e.target.value);
+  };
+
+  useEffect(() => {
+    getTokenAddress();
+  }, [tokenSymbol]);
+
+  useEffect(() => {
+    fetchTokenBalances();
+    fetchSolBalance();
+  }, [publicKey]);
+
+  const RenderTokenBalances = () => {
+    return (
+      <div className="token-balances">
+        <h2>Your Token Balances:</h2>
+        <ul>
+          {tokenBalances?.map((tokenBalance) => (
+            <li key={tokenBalance?.publicKey?.toBase58()}>
+              {tokenBalance?.symbol}: {tokenBalance?.balance?.toString()} tokens
+            </li>
+          ))}
+        </ul>
+      </div>
+    );
+  };
+
+  const RenderContent = () => {
+    return (
+      <div className="dashboard">
+        <div className="balance">
+          <h2>Your Balance:</h2>
+          <p className="balance-amount">
+            {publicKey ? solBalance : !publicKey ? "Wallet Not Connected" : 0}{" "}
+            {publicKey && "SOL"}
+          </p>
+        </div>
+        <div className="content">
+          <input
+            value={lamports}
+            type="number"
+            onChange={(e) => setTheLamports(e)}
+            placeholder="Enter Lamports"
+            className="input-field"
+          />
+          <br />
+          <input
+            value={walletPublicKey}
+            type="text"
+            onChange={(e) => setWalletPublicKey(e.target.value)}
+            placeholder="Enter Hash"
+            className="input-field"
+          />
+          <br />
+          <button
+            className="btn send-button"
+            disabled={!publicKey || loading}
+            onClick={sendSolHandler}
+          >
+            {loading ? "Sending..." : "Send SOL"}
+          </button>
+        </div>
+      </div>
+    );
+  };
+
+  console.log(tokenBalances);
+
+  return (
+    <div className="App">
+      <header className="navbar">
+        <nav className="navbar-inner">
+          <ul className="nav"></ul>
+          <ul className="nav pull-right">
+            <li>
+              <a href="#" className="nav-link">
+                White Paper
+              </a>
+            </li>
+            <li className="divider-vertical"></li>
+            <li>
+              <WalletMultiButton />
+            </li>
+          </ul>
+        </nav>
+      </header>
+      <RenderContent />
+      <RenderTokenBalances />
+    </div>
+  );
+};
+
+export default Content;
