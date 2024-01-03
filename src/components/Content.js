@@ -177,9 +177,10 @@ const Content = () => {
             tokenBalances?.map((tokenBalance) => {
               const toStringBalance = tokenBalance?.balance?.toString();
               const key = tokenBalance?.publicKey?.toBase58();
+              const symbol = tokenBalance?.symbol;
               return (
                 <li key={key}>
-                  {tokenBalance?.symbol}: {toStringBalance} tokens
+                  {symbol}: {toStringBalance} tokens
                 </li>
               );
             })
