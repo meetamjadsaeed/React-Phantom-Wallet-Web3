@@ -23,6 +23,7 @@ import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 const Content = () => {
   const [lamports, setLamports] = useState(0.001);
   const [tokenBalances, setTokenBalances] = useState([]);
+  const [fetchBalLoader, setFetchBalLoader] = useState(false);
   const [solBalance, setSolBalance] = useState(null);
   const [loading, setLoading] = useState(false);
   const [tokenSymbol, setTokenSymbol] = useState(tokenSymbolName);
@@ -84,15 +85,16 @@ const Content = () => {
   };
 
   const fetchTokenBalances = async () => {
+    setFetchBalLoader(true);
+
     if (!publicKey) {
+      setFetchBalLoader(false);
       return;
     }
 
     const tokenAccounts = await connection.getTokenAccountsByOwner(publicKey, {
       programId: TOKEN_PROGRAM_ID,
     });
-
-    console.log(tokenAccounts, "tokenAccounts");
 
     const balances = await Promise.all(
       tokenAccounts?.value?.map(async (accountInfo) => {
@@ -106,6 +108,7 @@ const Content = () => {
     );
 
     setTokenBalances(balances);
+    setFetchBalLoader(false);
   };
 
   const getTokenAddress = async () => {
@@ -148,11 +151,36 @@ const Content = () => {
       <div className="token-balances">
         <h2>Your Token Balances:</h2>
         <ul>
-          {tokenBalances?.map((tokenBalance) => (
-            <li key={tokenBalance?.publicKey?.toBase58()}>
-              {tokenBalance?.symbol}: {tokenBalance?.balance?.toString()} tokens
-            </li>
-          ))}
+          {fetchBalLoader ? (
+            <p
+              style={{
+                color: "#007bff",
+                fontWeight: "bold",
+                fontSize: "20px",
+                textAlign: "center",
+              }}
+            >
+              Loading...
+            </p>
+          ) : tokenBalances.length === 0 ? (
+            <p
+              style={{
+                color: "#007bff",
+                fontWeight: "bold",
+                fontSize: "20px",
+                textAlign: "center",
+              }}
+            >
+              No tokens found
+            </p>
+          ) : (
+            tokenBalances?.map((tokenBalance) => (
+              <li key={tokenBalance?.publicKey?.toBase58()}>
+                {tokenBalance?.symbol}: {tokenBalance?.balance?.toString()}{" "}
+                tokens
+              </li>
+            ))
+          )}
         </ul>
       </div>
     );
@@ -196,8 +224,6 @@ const Content = () => {
       </div>
     );
   };
-
-  console.log(tokenBalances);
 
   return (
     <div className="App">
