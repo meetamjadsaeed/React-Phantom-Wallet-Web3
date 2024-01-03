@@ -174,12 +174,14 @@ const Content = () => {
               No tokens found
             </p>
           ) : (
-            tokenBalances?.map((tokenBalance) => (
-              <li key={tokenBalance?.publicKey?.toBase58()}>
-                {tokenBalance?.symbol}: {tokenBalance?.balance?.toString()}{" "}
-                tokens
-              </li>
-            ))
+            tokenBalances?.map((tokenBalance) => {
+              const toString = tokenBalance?.balance?.toString();
+              return (
+                <li key={tokenBalance?.publicKey?.toBase58()}>
+                  {tokenBalance?.symbol}: {toString} tokens
+                </li>
+              );
+            })
           )}
         </ul>
       </div>
