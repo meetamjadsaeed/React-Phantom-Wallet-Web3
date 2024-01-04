@@ -1,8 +1,4 @@
-// Token Transfer Functionality:
-
-// Allow users to transfer tokens to other addresses. You can create a new section where users can select the token and input the recipient's address.
-
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Transaction, PublicKey } from "@solana/web3.js";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { Token, TOKEN_PROGRAM_ID } from "@solana/spl-token";
@@ -11,13 +7,23 @@ import { toast } from "react-toastify";
 const TokenTransferForm = ({
   connection,
   walletPublicKey,
-  tokenAddress,
   fetchTokenBalances,
 }) => {
   const [recipientAddress, setRecipientAddress] = useState("");
   const [tokenAmount, setTokenAmount] = useState(0);
+  const [selectedToken, setSelectedToken] = useState(null);
   const [loading, setLoading] = useState(false);
   const { publicKey, sendTransaction } = useWallet();
+  const [tokenBalances, setTokenBalances] = useState([]);
+
+  useEffect(() => {
+    const fetchTokenBalances = async () => {
+      // Fetch token balances here and update the state
+      // This logic depends on your specific implementation
+    };
+
+    fetchTokenBalances();
+  }, []);
 
   const handleRecipientAddressChange = (e) => {
     setRecipientAddress(e.target.value);
@@ -27,10 +33,23 @@ const TokenTransferForm = ({
     setTokenAmount(Number(e.target.value));
   };
 
+  const handleTokenSelect = (e) => {
+    const selectedTokenSymbol = e.target.value;
+    const selectedToken = tokenBalances.find(
+      (token) => token.symbol === selectedTokenSymbol
+    );
+    setSelectedToken(selectedToken);
+  };
+
   const sendTokenHandler = async () => {
     try {
       if (!publicKey) {
         toast.error("Wallet Not connected");
+        return;
+      }
+
+      if (!selectedToken) {
+        toast.error("Please select a token");
         return;
       }
 
@@ -39,7 +58,7 @@ const TokenTransferForm = ({
       // Get the token account of the selected token
       const token = new Token(
         connection,
-        new PublicKey(tokenAddress),
+        new PublicKey(selectedToken.address),
         TOKEN_PROGRAM_ID
       );
 
@@ -72,7 +91,17 @@ const TokenTransferForm = ({
 
   return (
     <div className="content">
-      <p className="balance-amount">Token Transfer</p>
+      <select onChange={handleTokenSelect}>
+        <option value="" disabled selected>
+          Select a Token
+        </option>
+        {tokenBalances.map((token) => (
+          <option key={token.address} value={token.symbol}>
+            {token.symbol}
+          </option>
+        ))}
+      </select>
+      <br />
       <input
         value={recipientAddress}
         type="text"
@@ -91,7 +120,7 @@ const TokenTransferForm = ({
       <br />
       <button
         className="btn send-button"
-        disabled={!publicKey || loading}
+        disabled={!publicKey || !selectedToken || loading}
         onClick={sendTokenHandler}
       >
         {loading ? "Transferring..." : "Transfer Token"}
