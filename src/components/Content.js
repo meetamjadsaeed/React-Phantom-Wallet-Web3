@@ -253,12 +253,17 @@ const Content = () => {
       </header>
       <RenderContent />
       <RenderTokenBalances />
-      <TokenTransferForm
-        connection={connection}
-        walletPublicKey={walletPublicKey}
-        tokenAddress={tokenAddress}
-        fetchTokenBalances={fetchTokenBalances}
-      />
+      <details>
+        <summary>
+          <h5 className="balance-amount">Click to Token Transfer</h5>
+        </summary>
+        <TokenTransferForm
+          connection={connection}
+          walletPublicKey={walletPublicKey}
+          tokenAddress={tokenAddress}
+          fetchTokenBalances={fetchTokenBalances}
+        />
+      </details>
     </div>
   );
 };
