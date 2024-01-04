@@ -1,7 +1,11 @@
+// Token Transfer Functionality:
+
+// Allow users to transfer tokens to other addresses. You can create a new section where users can select the token and input the recipient's address.
+
 import React, { useState } from "react";
-import { Transaction } from "@solana/web3.js";
+import { Transaction, PublicKey } from "@solana/web3.js";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { Token } from "@solana/spl-token";
+import { Token, TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { toast } from "react-toastify";
 
 const TokenTransferForm = ({
@@ -68,6 +72,7 @@ const TokenTransferForm = ({
 
   return (
     <div className="content">
+      <p className="balance-amount">Token Transfer</p>
       <input
         value={recipientAddress}
         type="text"
