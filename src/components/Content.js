@@ -19,6 +19,7 @@ import {
   walletPublicKeyGlobally,
 } from "../helpers";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
+import TokenTransferForm from "./transfer/TokenTransferForm";
 
 const Content = () => {
   const [lamports, setLamports] = useState(0.001);
@@ -33,6 +34,9 @@ const Content = () => {
   const [tokenAddress, setTokenAddress] = useState(null);
   const connection = new Connection(clusterApiUrl(phatomEnvironment));
   const { publicKey, sendTransaction } = useWallet();
+
+  const [recipientAddress, setRecipientAddress] = useState("");
+  const [tokenAmount, setTokenAmount] = useState(0);
 
   const sendSolHandler = useCallback(async () => {
     try {
@@ -249,6 +253,12 @@ const Content = () => {
       </header>
       <RenderContent />
       <RenderTokenBalances />
+      <TokenTransferForm
+        connection={connection}
+        walletPublicKey={walletPublicKey}
+        tokenAddress={tokenAddress}
+        fetchTokenBalances={fetchTokenBalances}
+      />
     </div>
   );
 };
