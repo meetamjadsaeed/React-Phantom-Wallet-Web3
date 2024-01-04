@@ -91,6 +91,9 @@ const TokenTransferForm = ({
 
   return (
     <div className="content">
+      <p className="balance-amount">
+        <strong>Token Transfer</strong>
+      </p>
       <select onChange={handleTokenSelect}>
         <option value="" disabled selected>
           Select a Token
