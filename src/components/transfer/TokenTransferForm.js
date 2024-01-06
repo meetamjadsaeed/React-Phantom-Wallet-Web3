@@ -80,7 +80,7 @@ const TokenTransferForm = ({
       // Confirm the transaction
       await connection.confirmTransaction(signature, "Processed");
 
-      toast.success("Token Transfer Successful");
+      toast.success("Token transfer successful");
       fetchTokenBalances();
       setLoading(false);
     } catch (error) {
