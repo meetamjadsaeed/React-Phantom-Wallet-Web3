@@ -44,7 +44,7 @@ const TokenTransferForm = ({
   const sendTokenHandler = async () => {
     try {
       if (!publicKey) {
-        toast.error("Wallet Not connected");
+        toast.error("Wallet not connected");
         return;
       }
 
