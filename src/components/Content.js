@@ -41,7 +41,7 @@ const Content = () => {
   const sendSolHandler = useCallback(async () => {
     try {
       if (!publicKey) {
-        toast.error("Wallet Not connected");
+        toast.error("Wallet not connected");
         return;
       }
 
