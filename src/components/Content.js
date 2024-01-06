@@ -62,7 +62,7 @@ const Content = () => {
 
       await connection.confirmTransaction(signature, "processed");
 
-      toast.success("Transaction Successful");
+      toast.success("Transaction successful");
       setTheLamports("");
       fetchSolBalance();
       setLoading(false);
