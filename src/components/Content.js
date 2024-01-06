@@ -60,7 +60,7 @@ const Content = () => {
 
       const signature = await sendTransaction(transaction, connection);
 
-      await connection.confirmTransaction(signature, "processed");
+      await connection.confirmTransaction(signature, "Processed");
 
       toast.success("Transaction successful");
       setTheLamports("");
