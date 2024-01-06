@@ -78,7 +78,7 @@ const TokenTransferForm = ({
       const signature = await sendTransaction(transaction, connection);
 
       // Confirm the transaction
-      await connection.confirmTransaction(signature, "processed");
+      await connection.confirmTransaction(signature, "Processed");
 
       toast.success("Token Transfer Successful");
       fetchTokenBalances();
