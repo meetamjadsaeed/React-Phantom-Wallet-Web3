@@ -200,7 +200,7 @@ const Content = () => {
         <div className="balance">
           <h2>Your Balance:</h2>
           <p className="balance-amount">
-            {publicKey ? solBalance : !publicKey ? "Wallet Not Connected" : 0}{" "}
+            {publicKey ? solBalance : !publicKey ? "Wallet not connected" : 0}{" "}
             {publicKey && "SOL"}
           </p>
         </div>
