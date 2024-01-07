@@ -255,7 +255,7 @@ const Content = () => {
       <RenderTokenBalances />
       <details>
         <summary>
-          <h5 className="balance-amount">Click to Token Transfer</h5>
+          <h5 className="balance-amount">Click to token transfer</h5>
         </summary>
         <TokenTransferForm
           connection={connection}
